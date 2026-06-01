@@ -8,7 +8,7 @@ import type { LogtoAuthConfig } from './logto.config';
 const PRIMARY = 'https://api.example.test';
 const SECONDARY = 'https://billing.example.test';
 
-const BASE_OPTIONS: LogtoAuthConfig & { logoutHookFactories?: Array<() => AuthLogoutHook> } = {
+const BASE_OPTIONS: LogtoAuthConfig & { logoutHookFactories?: (() => AuthLogoutHook)[] } = {
   endpoint: 'https://test.logto.app',
   appId: 'test-app',
   routing: {

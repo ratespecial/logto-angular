@@ -35,7 +35,7 @@ export interface LogtoAuthOptions extends LogtoAuthConfig {
    * ]
    * ```
    */
-  logoutHookFactories?: Array<() => AuthLogoutHook>;
+  logoutHookFactories?: (() => AuthLogoutHook)[];
 }
 
 /**
