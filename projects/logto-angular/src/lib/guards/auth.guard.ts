@@ -1,7 +1,7 @@
-import {inject} from '@angular/core';
-import {CanActivateFn} from '@angular/router';
-import {AuthService} from '../auth.service';
-import {HistoryService} from '../history.service';
+import { inject } from '@angular/core';
+import { CanActivateFn } from '@angular/router';
+import { AuthService } from '../auth.service';
+import { HistoryService } from '../history.service';
 
 /**
  * Replaces `autoLoginPartialRoutesGuard`. Allows activation when a Logto session

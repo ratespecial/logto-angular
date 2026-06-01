@@ -1,7 +1,7 @@
-import {inject} from '@angular/core';
-import {Router, RoutesRecognized} from '@angular/router';
-import {filter} from 'rxjs/operators';
-import {HistoryService} from '../history.service';
+import { inject } from '@angular/core';
+import { Router, RoutesRecognized } from '@angular/router';
+import { filter } from 'rxjs/operators';
+import { HistoryService } from '../history.service';
 
 /**
  * Initializer that tracks the last visited route.
@@ -13,9 +13,7 @@ export function initializeRouteTracking() {
     const historyService = inject(HistoryService);
 
     router.events
-      .pipe(
-        filter(event => event instanceof RoutesRecognized)
-      )
+      .pipe(filter((event) => event instanceof RoutesRecognized))
       .subscribe((event: RoutesRecognized) => {
         if (!event.urlAfterRedirects.startsWith('/auth')) {
           historyService.setLastVisitedRoute(event.urlAfterRedirects);

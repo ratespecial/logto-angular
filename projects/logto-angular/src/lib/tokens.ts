@@ -1,7 +1,7 @@
-import {InjectionToken} from '@angular/core';
+import { InjectionToken } from '@angular/core';
 import type LogtoClient from '@logto/browser';
-import {Observable} from 'rxjs';
-import {LogtoAuthConfig} from './logto.config';
+import { Observable } from 'rxjs';
+import { LogtoAuthConfig } from './logto.config';
 
 /**
  * The resolved auth configuration (native Logto config + `routing` addon). Every part of

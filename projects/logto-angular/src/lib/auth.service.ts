@@ -1,9 +1,9 @@
-import {inject, Injectable} from '@angular/core';
-import {Router} from '@angular/router';
-import type {AccessTokenClaims, IdTokenClaims} from '@logto/browser';
-import {BehaviorSubject, isObservable, Observable} from 'rxjs';
-import {distinctUntilChanged} from 'rxjs/operators';
-import {AUTH_LOGOUT_HOOK, LOGTO_AUTH_CONFIG, LOGTO_CLIENT} from './tokens';
+import { inject, Injectable } from '@angular/core';
+import { Router } from '@angular/router';
+import type { AccessTokenClaims, IdTokenClaims } from '@logto/browser';
+import { BehaviorSubject, isObservable, Observable } from 'rxjs';
+import { distinctUntilChanged } from 'rxjs/operators';
+import { AUTH_LOGOUT_HOOK, LOGTO_AUTH_CONFIG, LOGTO_CLIENT } from './tokens';
 
 /**
  * Angular-friendly facade over the promise-based `@logto/browser` client. Owns the
@@ -16,7 +16,7 @@ export class AuthService {
   private router = inject(Router);
   private client = inject(LOGTO_CLIENT);
   private routing = inject(LOGTO_AUTH_CONFIG).routing;
-  private logoutHooks = inject(AUTH_LOGOUT_HOOK, {optional: true}) ?? [];
+  private logoutHooks = inject(AUTH_LOGOUT_HOOK, { optional: true }) ?? [];
 
   private authenticated$ = new BehaviorSubject(false);
 
@@ -75,15 +75,13 @@ export class AuthService {
     this.authenticated$.next(false);
 
     const signedOutPath = this.routing.signedOutPath;
-    this.client
-      .signOut(window.location.origin + signedOutPath)
-      .catch((err: unknown) => {
-        console.error(err);
+    this.client.signOut(window.location.origin + signedOutPath).catch((err: unknown) => {
+      console.error(err);
 
-        if (this.router.url !== signedOutPath) {
-          this.router.navigateByUrl(signedOutPath);
-        }
-      });
+      if (this.router.url !== signedOutPath) {
+        this.router.navigateByUrl(signedOutPath);
+      }
+    });
   }
 
   protected fireLogoutHooks(): void {
@@ -91,7 +89,7 @@ export class AuthService {
       const result = hook();
 
       if (isObservable(result)) {
-        result.subscribe({error: (err) => console.error(err)});
+        result.subscribe({ error: (err) => console.error(err) });
       }
     }
   }

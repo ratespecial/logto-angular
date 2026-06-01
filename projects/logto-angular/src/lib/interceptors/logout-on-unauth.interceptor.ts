@@ -1,7 +1,7 @@
-import {inject} from '@angular/core';
-import {HttpErrorResponse, HttpInterceptorFn} from '@angular/common/http';
-import {tap} from 'rxjs/operators';
-import {AuthService} from '../auth.service';
+import { inject } from '@angular/core';
+import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
+import { tap } from 'rxjs/operators';
+import { AuthService } from '../auth.service';
 
 /**
  * If any /api call returns 401, sign the user out and send them to the login page.

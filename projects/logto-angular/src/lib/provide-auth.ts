@@ -1,8 +1,19 @@
-import { EnvironmentProviders, inject, makeEnvironmentProviders, provideAppInitializer } from '@angular/core';
+import {
+  EnvironmentProviders,
+  inject,
+  makeEnvironmentProviders,
+  provideAppInitializer,
+} from '@angular/core';
 import LogtoClient from '@logto/browser';
 import { AuthService } from './auth.service';
 import { LogtoAuthConfig } from './logto.config';
-import { AUTH_LOGOUT_HOOK, AuthLogoutHook, LOGTO_AUTH_CONFIG, LOGTO_CLIENT, PRIMARY_RESOURCE } from './tokens';
+import {
+  AUTH_LOGOUT_HOOK,
+  AuthLogoutHook,
+  LOGTO_AUTH_CONFIG,
+  LOGTO_CLIENT,
+  PRIMARY_RESOURCE,
+} from './tokens';
 
 /**
  * Configuration passed to `provideLogtoAuth()`: the native `LogtoConfig` fields plus the
@@ -51,7 +62,7 @@ export interface LogtoAuthOptions extends LogtoAuthConfig {
  * ```
  */
 export function provideLogtoAuth(options: LogtoAuthOptions): EnvironmentProviders {
-  const {logoutHookFactories, ...config} = options;
+  const { logoutHookFactories, ...config } = options;
 
   const hookProviders = (logoutHookFactories ?? []).map((factory) => ({
     provide: AUTH_LOGOUT_HOOK,
@@ -61,11 +72,11 @@ export function provideLogtoAuth(options: LogtoAuthOptions): EnvironmentProvider
 
   // `routing` and `noAccessMessage` are app-only concerns; strip them so only the native
   // `LogtoConfig` reaches the SDK.
-  const {routing: _routing, noAccessMessage: _noAccessMessage, ...logtoConfig} = config;
+  const { routing: _routing, noAccessMessage: _noAccessMessage, ...logtoConfig } = config;
 
   return makeEnvironmentProviders([
-    {provide: LOGTO_AUTH_CONFIG, useValue: config},
-    {provide: LOGTO_CLIENT, useValue: new LogtoClient(logtoConfig)},
+    { provide: LOGTO_AUTH_CONFIG, useValue: config },
+    { provide: LOGTO_CLIENT, useValue: new LogtoClient(logtoConfig) },
     {
       provide: PRIMARY_RESOURCE,
       useValue: config.routing.primaryResource ?? config.routing.secureRoutes[0].resource,

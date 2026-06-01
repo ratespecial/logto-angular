@@ -1,4 +1,4 @@
-import {Injectable} from '@angular/core';
+import { Injectable } from '@angular/core';
 
 /**
  * sessionStorage key used to persist the last visited app route across the OIDC

@@ -1,7 +1,7 @@
-import {Routes} from '@angular/router';
-import {CallbackComponent} from './callback/callback.component';
-import {SignedOutComponent} from './signed-out/signed-out.component';
-import {LogtoRoutingConfig} from './logto.config';
+import { Routes } from '@angular/router';
+import { CallbackComponent } from './callback/callback.component';
+import { SignedOutComponent } from './signed-out/signed-out.component';
+import { LogtoRoutingConfig } from './logto.config';
 
 /** Routes accept a path relative to the app root, so drop any leading slash. */
 function toRoutePath(path: string): string {
@@ -22,9 +22,11 @@ function toRoutePath(path: string): string {
  * ];
  * ```
  */
-export function getAuthRoutes(routing: Pick<LogtoRoutingConfig, 'callbackPath' | 'signedOutPath'>): Routes {
+export function getAuthRoutes(
+  routing: Pick<LogtoRoutingConfig, 'callbackPath' | 'signedOutPath'>,
+): Routes {
   return [
-    {path: toRoutePath(routing.callbackPath), component: CallbackComponent},
-    {path: toRoutePath(routing.signedOutPath), component: SignedOutComponent},
+    { path: toRoutePath(routing.callbackPath), component: CallbackComponent },
+    { path: toRoutePath(routing.signedOutPath), component: SignedOutComponent },
   ];
 }

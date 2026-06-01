@@ -1,4 +1,4 @@
-import type {LogtoConfig} from '@logto/browser';
+import type { LogtoConfig } from '@logto/browser';
 
 /**
  * Maps outgoing request URLs to the Logto API resource whose access token the HTTP

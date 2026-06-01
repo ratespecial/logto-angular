@@ -1,0 +1,19 @@
+# Build output
+/dist
+/tmp
+/out-tsc
+/bazel-out
+
+# Dependencies
+/node_modules
+
+# Angular cache
+/.angular
+/.claude
+README.md
+
+# Coverage
+/coverage
+
+# Lock files
+package-lock.json
