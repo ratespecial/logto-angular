@@ -16,9 +16,9 @@ An Angular 21+ library that wraps [`@logto/browser`](https://docs.logto.io/sdk/b
 
 | Dependency | Version |
 |---|---|
-| `@angular/core` | ^21.2.0 |
-| `@angular/common` | ^21.2.0 |
-| `@angular/router` | ^21.2.0 |
+| `@angular/core` | ^21 |
+| `@angular/common` | ^21 |
+| `@angular/router` | ^21 |
 | `@logto/browser` | ^3.0.13 |
 | `rxjs` | ~7.8.0 |
 
@@ -503,5 +503,5 @@ Update `version` in `projects/logto-angular/package.json`, then:
 
 ```bash
 ng build logto-angular
-npm publish dist/logto-angular --access restricted
+npm publish dist/logto-angular --access public
 ```

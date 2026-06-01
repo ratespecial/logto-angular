@@ -1,10 +1,22 @@
 {
   "name": "@ratespecial/logto-angular",
-  "version": "1.0.0",
+  "version": "1.0.1",
+  "description": "Angular Logto.io integration using @logto/browser",
+  "author": "kpierce@ratespecial.com",
+  "homepage": "https://github.com/ratespecial/logto-angular",
+  "license": "MIT",
+  "keywords": ["angular", "oidc", "logto"],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ratespecial/logto-angular.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ratespecial/logto-angular/issues"
+  },
   "peerDependencies": {
-    "@angular/common": "^21.2.0",
-    "@angular/core": "^21.2.0",
-    "@angular/router": "^21.2.0",
+    "@angular/common": ">=21",
+    "@angular/core": ">=21",
+    "@angular/router": ">=21",
     "@logto/browser": "^3.0.13",
     "rxjs": "~7.8.0"
   },
