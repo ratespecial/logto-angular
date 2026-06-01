@@ -7,7 +7,9 @@
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,
     "paths": {
-      "logto-angular": ["./dist/logto-angular"]
+      "logto-angular": ["./dist/logto-angular"],
+      "@ratespecial/logto-angular": ["./dist/logto-angular"],
+      "@ratespecial/logto-angular/testing": ["./dist/logto-angular/testing"]
     },
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,

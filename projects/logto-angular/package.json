@@ -1,9 +1,12 @@
 {
-  "name": "logto-angular",
-  "version": "0.0.1",
+  "name": "@ratespecial/logto-angular",
+  "version": "1.0.0",
   "peerDependencies": {
     "@angular/common": "^21.2.0",
-    "@angular/core": "^21.2.0"
+    "@angular/core": "^21.2.0",
+    "@angular/router": "^21.2.0",
+    "@logto/browser": "^3.0.13",
+    "rxjs": "~7.8.0"
   },
   "dependencies": {
     "tslib": "^2.3.0"
