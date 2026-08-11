@@ -203,10 +203,51 @@ export class MyComponent {
 | `refreshAuthState()` | `Promise<boolean>` | Reads session from storage (no network); pushes result to stream. |
 | `signIn(redirectUri?)` | `void` | Full-page redirect to Logto hosted UI. Default redirect URI is built from `callbackPath`. |
 | `handleCallback(callbackUri)` | `Promise<void>` | Complete the OIDC callback, then refresh auth state. |
-| `getAccessToken(resource?)` | `Promise<string>` | Resource-scoped JWT; client refreshes/caches transparently. |
+| `getAccessToken(resource?)` | `Promise<string>` | Resource-scoped JWT; client refreshes/caches transparently. Recovers a dead session — see below. |
 | `getAccessTokenClaims(resource?)` | `Promise<AccessTokenClaims>` | Decoded claims of the resource token (e.g. `scope`). |
 | `getIdTokenClaims()` | `Promise<IdTokenClaims>` | Decoded claims of the ID token (e.g. `sub`, `name`, `email`). |
+| `recoverDeadSession()` | `Promise<void> \| null` | Flushes stored tokens and starts a fresh sign-in; `null` if recovery was declined. Called automatically. |
 | `logout()` | `void` | Fires hooks, emits `false`, calls `signOut`, navigates to `signedOutPath` on error. |
+
+### Dead-session recovery
+
+`@logto/browser` treats "an ID token exists in `localStorage`" as "signed in" — it never checks
+that token's expiry — and it does not delete a refresh token the token endpoint has just
+rejected. Left alone, a stale session therefore wedges the app permanently: the guard admits
+the user, then every token fetch rejects with `LogtoClientError: Not authenticated.` forever.
+
+This library closes that gap. `getAccessToken()` and `getAccessTokenClaims()` detect a dead
+session and call `recoverDeadSession()`, which records the current route, fires the logout
+hooks, and calls `signIn()` — and since the SDK clears every stored token before redirecting,
+the flush and the retry are a single step. If the Logto SSO cookie is still valid the user is
+bounced straight back to where they were; otherwise they land on the hosted login page.
+
+A session counts as dead when the SDK reports any of:
+
+| Shape | Meaning |
+|---|---|
+| `LogtoClientError` / `not_authenticated` | No ID token, or the refresh token is missing. |
+| `LogtoRequestError` / `invalid_grant`, `invalid_client`, `unauthorized_client` | The token endpoint rejected the refresh token. |
+| `LogtoError` / `unexpected_response_error` wrapping `{error: 'invalid_grant'}` | The same rejection, returned as a plain OIDC error body. |
+
+Transient failures (offline, Logto unreachable, 5xx) are deliberately excluded — they must not
+trigger a sign-out. The predicate is exported as `isDeadSessionError(err)` for apps that need
+the same classification. Note that Logto namespaces its token-endpoint codes, so a rejected
+refresh token arrives as `oidc.invalid_grant`; both the namespaced and bare forms are matched.
+
+**Once a redirect is in flight, the token promise is left pending on purpose.** The page is on
+its way to Logto, so the call has no answer to wait for, and rejecting it would push an error
+into every caller — including the ones that legitimately ignore failures, where it surfaces as
+an unhandled rejection in the console. Callers simply never resume before the browser unloads.
+If the redirect itself fails, the promise rejects with the original error so the problem stays
+visible. When recovery is *declined* (see below) the error is thrown as normal.
+
+Two loop guards apply: the in-flight redirect is shared, so N concurrent failing requests
+trigger one redirect and all hang on it; and a 30-second cooldown recorded in
+`sessionStorage['auth.lastRecoveryAt']` means a freshly issued session that is *also* rejected
+(e.g. the resource was removed from the Logto application) logs an error instead of spinning
+through the redirect forever. Recovery is declined entirely while on `callbackPath` or
+`signedOutPath`.
 
 ### `authGuard`
 
@@ -215,13 +256,20 @@ A functional `CanActivateFn` that checks for an active Logto session and redirec
 **Behavior:**
 
 1. Calls `AuthService.refreshAuthState()`.
-2. If authenticated, returns `true` (allows navigation).
+2. If authenticated, fetches the `PRIMARY_RESOURCE` token to confirm the session is genuinely
+   alive — a stored ID token only proves one once existed — then returns `true`.
+   - A dead session never settles: `AuthService` starts the recovery redirect and leaves the
+     call pending, so navigation simply never completes before the page unloads.
+   - A transient failure returns `true` — the session is probably fine, and stranding the user
+     on a blank screen is worse than letting individual requests report their own errors.
 3. If not authenticated:
    - Saves the attempted URL via `HistoryService.setLastVisitedRoute()` (skipped for `/auth/*` paths to avoid loops).
    - Calls `AuthService.signIn()` (full-page redirect).
    - Returns `false`.
 
 After sign-in, `CallbackComponent` restores navigation to the saved URL via `HistoryService.consumeLastVisitedRoute()`.
+
+The token fetch in step 2 costs one refresh-grant round trip on the first guarded navigation; the SDK caches the result for every later call.
 
 ```ts
 // app.routes.ts
@@ -243,6 +291,9 @@ Attaches a resource-scoped `Bearer` token to outgoing HTTP requests that match a
 - If a resource matches, calls `AuthService.getAccessToken(resource)` (the Logto SDK refreshes/caches the token).
 - Adds `Authorization: Bearer <token>` and forwards the cloned request.
 - If no resource matches, or the token is empty, the request passes through unchanged.
+- If the session is dead, the request stays pending: `AuthService` is already flushing storage
+  and redirecting, so the response would never arrive. Any other token-acquisition failure is
+  surfaced to the caller as-is.
 
 **Using `resourceForUrl` standalone:**
 
@@ -277,6 +328,12 @@ provideHttpClient(
 ```
 
 Order matters: place `logtoTokenInterceptor` first so the token is attached before the response interceptor evaluates it.
+
+Because `logtoTokenInterceptor` is registered first it *wraps* `logoutOnUnauthInterceptor`, so
+errors it raises while acquiring a token never reach the 401 handler (and they are not
+`HttpErrorResponse`s in any case). That is why token-acquisition failures are handled inside
+`AuthService`/`logtoTokenInterceptor` rather than here; `logoutOnUnauthInterceptor` only ever
+sees genuine 401 responses from the server.
 
 ### `CallbackComponent` and `SignedOutComponent`
 

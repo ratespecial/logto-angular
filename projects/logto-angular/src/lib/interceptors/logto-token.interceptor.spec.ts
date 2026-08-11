@@ -98,4 +98,37 @@ describe('logtoTokenInterceptor', () => {
     req.flush([]);
     httpTesting.verify();
   });
+
+  it('leaves the request pending while a dead session redirects', async () => {
+    // `AuthService` never settles the token promise once it starts the recovery redirect, so
+    // nothing is emitted and no error reaches the app before the page unloads.
+    authService.getAccessToken.mockReturnValue(new Promise(() => undefined));
+
+    let settled = false;
+    http.get('/api/users').subscribe({
+      next: () => (settled = true),
+      error: () => (settled = true),
+      complete: () => (settled = true),
+    });
+
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(settled).toBe(false);
+    httpTesting.expectNone('/api/users');
+  });
+
+  it('surfaces token failures that are not session death', async () => {
+    authService.getAccessToken.mockRejectedValue(new TypeError('Failed to fetch'));
+
+    let errored: unknown = null;
+    http.get('/api/users').subscribe({ error: (err: unknown) => (errored = err) });
+
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(errored).toBeInstanceOf(TypeError);
+    httpTesting.expectNone('/api/users');
+    httpTesting.verify();
+  });
 });

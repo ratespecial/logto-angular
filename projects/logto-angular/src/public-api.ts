@@ -6,6 +6,9 @@
 export * from './lib/auth.service';
 export * from './lib/history.service';
 
+// Errors
+export * from './lib/auth-errors';
+
 // Provider / config
 export * from './lib/provide-auth';
 export * from './lib/logto.config';

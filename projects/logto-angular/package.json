@@ -1,6 +1,6 @@
 {
   "name": "@ratespecial/logto-angular",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Angular Logto.io integration using @logto/browser",
   "author": "kpierce@ratespecial.com",
   "homepage": "https://github.com/ratespecial/logto-angular",

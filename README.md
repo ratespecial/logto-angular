@@ -11,6 +11,8 @@ See [`projects/logto-angular/README.md`](projects/logto-angular/README.md) for f
 - `authGuard` — session-checked route guard with post-login restoration
 - `logtoTokenInterceptor` — resource-scoped Bearer tokens
 - `logoutOnUnauthInterceptor` — 401 auto-logout
+- dead-session recovery — a stale or rejected refresh token flushes storage and re-signs-in
+  instead of wedging the app
 - `CallbackComponent` / `SignedOutComponent` — OIDC callback handling and sign-out landing
 - `HistoryService` + `initializeRouteTracking` — pre-login route persistence
 - `@ratespecial/logto-angular/testing` secondary entry point with `provideLogtoTesting()`
