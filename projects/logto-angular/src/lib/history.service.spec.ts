@@ -33,7 +33,7 @@ describe('HistoryService', () => {
     });
 
     it('returns null and logs the error if sessionStorage.getItem throws', () => {
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
       vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
         throw new Error('boom');
       });
@@ -58,7 +58,7 @@ describe('HistoryService', () => {
     });
 
     it('swallows and logs sessionStorage failures (e.g. quota exceeded)', () => {
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
       vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
         throw new Error('QuotaExceededError');
       });
@@ -84,7 +84,7 @@ describe('HistoryService', () => {
     });
 
     it('swallows and logs sessionStorage failures', () => {
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
       vi.spyOn(Storage.prototype, 'removeItem').mockImplementation(() => {
         throw new Error('boom');
       });
