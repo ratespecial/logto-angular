@@ -1,8 +1,32 @@
 import { TestBed } from '@angular/core/testing';
-import { HttpClient, provideHttpClient, withInterceptors } from '@angular/common/http';
+import {
+  HttpClient,
+  HttpErrorResponse,
+  provideHttpClient,
+  withInterceptors,
+} from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { logoutOnUnauthInterceptor } from './logout-on-unauth.interceptor';
 import { AuthService } from '../auth.service';
+import { LOGTO_AUTH_CONFIG, PRIMARY_RESOURCE } from '../tokens';
+import { LogtoAuthConfig } from '../logto.config';
+
+const PRIMARY = 'https://api.example.test';
+const SECONDARY = 'https://secondary.example.test';
+
+const config = {
+  endpoint: 'https://logto.example.test',
+  appId: 'app',
+  routing: {
+    callbackPath: '/auth/callback',
+    signedOutPath: '/auth/signed-out',
+    primaryResource: PRIMARY,
+    secureRoutes: [
+      { resource: PRIMARY, routes: ['/api'] },
+      { resource: SECONDARY, routes: [SECONDARY] },
+    ],
+  },
+} satisfies LogtoAuthConfig;
 
 describe('logoutOnUnauthInterceptor', () => {
   let http: HttpClient;
@@ -17,6 +41,8 @@ describe('logoutOnUnauthInterceptor', () => {
         provideHttpClient(withInterceptors([logoutOnUnauthInterceptor])),
         provideHttpClientTesting(),
         { provide: AuthService, useValue: authService },
+        { provide: LOGTO_AUTH_CONFIG, useValue: config },
+        { provide: PRIMARY_RESOURCE, useValue: PRIMARY },
       ],
     });
 
@@ -66,5 +92,38 @@ describe('logoutOnUnauthInterceptor', () => {
     await responsePromise;
 
     expect(authService.logout).not.toHaveBeenCalled();
+  });
+
+  it('does NOT call logout for a 401 from a secondary resource, and still propagates the error', async () => {
+    const responsePromise = http
+      .get(`${SECONDARY}/api/data`)
+      .toPromise()
+      .then(
+        () => null,
+        (err: unknown) => err,
+      );
+
+    const req = httpTesting.expectOne(`${SECONDARY}/api/data`);
+    req.flush('Unauthorized', { status: 401, statusText: 'Unauthorized' });
+
+    const err = await responsePromise;
+
+    expect(authService.logout).not.toHaveBeenCalled();
+    expect(err).toBeInstanceOf(HttpErrorResponse);
+    expect((err as HttpErrorResponse).status).toBe(401);
+  });
+
+  it('calls logout for a 401 from a URL matching no secure route', async () => {
+    const responsePromise = http
+      .get('/other/data')
+      .toPromise()
+      .catch(() => null);
+
+    const req = httpTesting.expectOne('/other/data');
+    req.flush('Unauthorized', { status: 401, statusText: 'Unauthorized' });
+
+    await responsePromise;
+
+    expect(authService.logout).toHaveBeenCalledOnce();
   });
 });

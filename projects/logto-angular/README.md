@@ -62,7 +62,7 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(
       withInterceptors([
         logtoTokenInterceptor,       // attaches Bearer tokens to matched routes
-        logoutOnUnauthInterceptor,   // logs out on 401
+        logoutOnUnauthInterceptor,   // logs out on a primary-resource 401
       ]),
     ),
 
@@ -153,7 +153,7 @@ Extends `@logto/browser`'s native `LogtoConfig` with two extra fields:
 |---|---|---|---|
 | `callbackPath` | `string` | Yes | Path Logto redirects to after sign-in (e.g. `/auth/callback`). |
 | `signedOutPath` | `string` | Yes | Path shown after sign-out (e.g. `/auth/signed-out`). |
-| `primaryResource` | `string` | No | The primary API resource indicator. Defaults to the first `secureRoutes` resource. Used for the scope-access gate in `CallbackComponent` and by consumers that need a specific resource token. |
+| `primaryResource` | `string` | No | The primary API resource indicator. Defaults to the first `secureRoutes` resource. Used for the scope-access gate in `CallbackComponent`, to decide which 401s trigger a logout in `logoutOnUnauthInterceptor`, and by consumers that need a specific resource token. |
 | `secureRoutes` | `SecureRouteMapping[]` | Yes | Maps request URLs to resource tokens for the HTTP interceptor. |
 
 ### `SecureRouteMapping`
@@ -319,7 +319,12 @@ Requests to `/api/...` get a token for `https://api.yourapp.com`; requests to `/
 
 ### `logoutOnUnauthInterceptor`
 
-Calls `AuthService.logout()` whenever any HTTP response returns `401 Unauthorized`.
+Calls `AuthService.logout()` when a request for the primary resource (or a request matching no
+`secureRoutes` entry) returns `401 Unauthorized`.
+
+A 401 from a secondary resource is passed through without logging out — it means the user lacks
+access to that API, not that their session is dead. Handle it in your own error interceptor, e.g.
+by comparing `resourceForUrl(req.url, routing.secureRoutes)` against `PRIMARY_RESOURCE`.
 
 ```ts
 provideHttpClient(
